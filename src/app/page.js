@@ -42,6 +42,12 @@ export default function Home() {
       </TopSection>
       <Divider />
 
+      <MiddleSection>
+        <TitleText>300.1 운동가 가입하기</TitleText>
+      </MiddleSection>
+
+      
+
       {/* <TileBox>
         <TitleText>내가</TitleText>
       </TileBox> */}
