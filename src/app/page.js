@@ -41,12 +41,14 @@ export default function Home() {
         </SportsmanSection>
       </TopSection>
       <Divider />
-
+      <Divider />
       <MiddleSection>
         <TitleText>300.1 운동가 가입하기</TitleText>
+        <Divider className="thin_divider" />
+        <AddPhotoBox>
+          <TitleText className="in_text">사진 추가하기</TitleText>
+        </AddPhotoBox>
       </MiddleSection>
-
-      
 
       {/* <TileBox>
         <TitleText>내가</TitleText>
@@ -113,6 +115,7 @@ const SportsmanSection = styled.div`
   flex-direction: row;
   justify-content: center;
   /* background-color: cyan; */
+
   .right_box {
     margin-left: 20px;
   }
@@ -129,7 +132,15 @@ const SportsmanBox = styled.div`
   /* background-color: cyan; */
 `;
 
-const MiddleSection = styled.div``;
+const MiddleSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .thin_divider {
+    height: 20px;
+  }
+`;
 
 const StoreIconContainer = styled.div`
   /* width: 20px;
@@ -145,11 +156,19 @@ const StoreIconContainer = styled.div`
   }
 `;
 
-const TileBox = styled.div`
-  height: 150px;
-  width: 150px;
+const AddPhotoBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  width: 250px;
   background-color: #d9d9d9;
   border-radius: 15px;
+
+  .in_text {
+    font-size: 15px;
+  }
 `;
 
 const Divider = styled.div`
