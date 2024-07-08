@@ -48,6 +48,18 @@ export default function Home() {
         <AddPhotoBox>
           <TitleText className="in_text">사진 추가하기</TitleText>
         </AddPhotoBox>
+        <AddPhotoButton>
+          <TitleText>사진 등록하기</TitleText>
+        </AddPhotoButton>
+        <NoticeTextContainer>
+          <Divider className="thin_divider" />
+          <NoticeText>위 버튼을 눌러서 활동 사진을 등록하세요!</NoticeText>
+          <Divider className="thin_divider" />
+          <NoticeText className="red_text">
+            인스타그램 스토리, 게시글에 등록된 화면의 스크린샷을 등록하세요!
+            (조건 미달시 등록 취소)
+          </NoticeText>
+        </NoticeTextContainer>
       </MiddleSection>
 
       {/* <TileBox>
@@ -168,6 +180,35 @@ const AddPhotoBox = styled.div`
 
   .in_text {
     font-size: 15px;
+  }
+`;
+
+const AddPhotoButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  width: 250px;
+  color: black;
+  background-color: #e9dedf;
+  border-radius: 15px;
+  margin-top: 10px;
+`;
+
+const NoticeText = styled.text`
+  font-size: 15px;
+  color: grey;
+`;
+
+const NoticeTextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 250px;
+
+  .red_text {
+    color: #ff0000;
   }
 `;
 
