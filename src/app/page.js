@@ -61,10 +61,32 @@ export default function Home() {
           </NoticeText>
         </NoticeTextContainer>
       </MiddleSection>
+      <Divider />
+      <Divider />
+      <BottomSection>
+        <TitleText>지금까지 활동한 사진 다시보기</TitleText>
+        <Divider className="thin_divider" />
+        <StickerSection>
+          <ArrowButtonBox>
+            <ArrowBackIos className="icon left_arrow" />
+          </ArrowButtonBox>
+          <WatchPhotoBox>
+            <PhotoInfoContainer>
+              {/* <text>info</text> */}
+              <NoticeText className="black_text date_text">
+                2024.xx.xx
+              </NoticeText>
+              <NoticeText className="black_text">x일 전</NoticeText>
+            </PhotoInfoContainer>
+          </WatchPhotoBox>
 
-      {/* <TileBox>
-        <TitleText>내가</TitleText>
-      </TileBox> */}
+          <ArrowButtonBox>
+            <ArrowForwardIos className="icon" />
+          </ArrowButtonBox>
+        </StickerSection>
+      </BottomSection>
+
+      <Divider />
     </main>
   );
 }
@@ -209,6 +231,51 @@ const NoticeTextContainer = styled.div`
 
   .red_text {
     color: #ff0000;
+  }
+`;
+
+const BottomSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .thin_divider {
+    height: 20px;
+  }
+`;
+
+const WatchPhotoBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 380px;
+  width: 250px;
+  background-color: #d9d9d9;
+  border-radius: 15px;
+
+  .in_text {
+    font-size: 15px;
+  }
+`;
+
+const PhotoInfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 250px;
+  height: 100px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  background-color: #e9dedf;
+
+  .black_text {
+    color: black;
+  }
+
+  .date_text {
+    font-size: 18px;
   }
 `;
 
