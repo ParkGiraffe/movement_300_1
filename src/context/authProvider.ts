@@ -1,4 +1,4 @@
-// src/context/authProvoider.ts
+// src/context/authProvider.ts
 
 import React, {
   useState,
@@ -6,53 +6,71 @@ import React, {
   useContext,
   createContext,
   useMemo,
+  ReactNode,
 } from "react";
 import { getAuth, User } from "firebase/auth";
 import nookies from "nookies";
 
-const AuthContext = createContext<{ user: User | null }>({
-  user: null,
-});
+// Define the type for the AuthContext
+interface AuthContextType {
+  user: User | null;
+}
 
-export const AuthProvider = ({ children }: any) => {
+// Create AuthContext with proper type
+const AuthContext = createContext<AuthContextType>({ user: null });
+
+// Define the type for AuthProvider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userState, setUserState] = useState<User | null>(null);
 
   useEffect(() => {
-    return getAuth().onIdTokenChanged(async (user) => {
+    const auth = getAuth();
+    const unsubscribe = auth.onIdTokenChanged(async (user) => {
       if (!user) {
-        // ID토큰 없음
+        // ID token 없음
         setUserState(null);
-        nookies.set(null, "token", "", { path: "/" });
+        nookies.set(undefined, "token", "", { path: "/" });
         return;
       }
 
-      // 토큰 쿠키를 설정한다.
+      // Set token cookie
       setUserState(user);
       const token = await user.getIdToken();
-      nookies.destroy(null, "token");
-      nookies.set(null, "token", token, { path: "/" });
+      nookies.destroy(undefined, "token");
+      nookies.set(undefined, "token", token, { path: "/" });
     });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     const refreshToken = setInterval(async () => {
-      const { currentUser } = getAuth();
-      if (currentUser) await currentUser.getIdToken(true);
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await currentUser.getIdToken(true);
+      }
     }, 10 * 60 * 1000);
 
     return () => clearInterval(refreshToken);
   }, []);
 
-  const user = useMemo(
+  const contextValue = useMemo(
     () => ({
       user: userState,
     }),
     [userState]
   );
 
-  return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   return useContext(AuthContext);
 };
