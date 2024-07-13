@@ -56,7 +56,7 @@ export default function Home() {
           <NoticeText>위 버튼을 눌러서 활동 사진을 등록하세요!</NoticeText>
           <Divider className="thin_divider" />
           <NoticeText className="red_text">
-            인스타그램 스토리, 게시글에 등록된 화면의 스크린샷을 등록하세요!
+              인스타그램 스토리, 게시글에 <br/> 등록된 화면의 스크린샷을 등록하세요!
             (조건 미달시 등록 취소)
           </NoticeText>
         </NoticeTextContainer>
@@ -221,15 +221,16 @@ const AddPhotoButton = styled.button`
 const NoticeText = styled.text`
   font-size: 15px;
   color: grey;
-`;
+  `;
 
 const NoticeTextContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 250px;
-
+  
   .red_text {
+    /* white-space: pre-line; */
     color: #ff0000;
   }
 `;
