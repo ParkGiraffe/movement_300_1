@@ -3,13 +3,32 @@
 import styled from "styled-components";
 import styles from "./page.module.css";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { auth, signInWithGoogle } from "@/firebase/firebaseClient";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { useState } from "react";
 // import StoreIcon from "@mui/icons-material/Store";
 
 export default function Home() {
+  const [accountName, SetAccountName] = useState(
+    !auth.currentUser ? "로그인하기" : auth.currentUser.displayName
+  );
+
+  const onLogin = async (event) => {
+    event.preventDefault();
+    await signInWithGoogle().then(() => {
+      SetAccountName(auth.currentUser.displayName);
+    });
+  };
+  // console.log(auth.currentUser.displayName);
+
   return (
     <main className={styles.main}>
       <div className={styles.userInfoContainer}>
-        <text>접속자 : 20190320 박요셉</text>
+        {/* <text onClick={onLogin}>접속자 : 20190320 박요셉</text> */}
+        <text onClick={onLogin}>{accountName}</text>
       </div>
       <Divider />
       <Divider />
@@ -56,8 +75,8 @@ export default function Home() {
           <NoticeText>위 버튼을 눌러서 활동 사진을 등록하세요!</NoticeText>
           <Divider className="thin_divider" />
           <NoticeText className="red_text">
-              인스타그램 스토리, 게시글에 <br/> 등록된 화면의 스크린샷을 등록하세요!
-            (조건 미달시 등록 취소)
+            인스타그램 스토리, 게시글에 <br /> 등록된 화면의 스크린샷을
+            등록하세요! (조건 미달시 등록 취소)
           </NoticeText>
         </NoticeTextContainer>
       </MiddleSection>
@@ -221,14 +240,14 @@ const AddPhotoButton = styled.button`
 const NoticeText = styled.text`
   font-size: 15px;
   color: grey;
-  `;
+`;
 
 const NoticeTextContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 250px;
-  
+
   .red_text {
     /* white-space: pre-line; */
     color: #ff0000;
