@@ -31,11 +31,11 @@ export default function Home() {
     const imageRef = ref(storage, `images/${imageUpload.name}`);
     // `images === 참조값이름(폴더이름), / 뒤에는 파일이름 어떻게 지을지
     uploadBytes(imageRef, imageUpload).then((snapshot) => {
-      // 업로드 되자마자 뜨게 만들기
-      getDownloadURL(snapshot.ref).then((url) => {
-        setImageList((prev) => [...prev, url]);
-      });
-      //
+      // // 업로드 되자마자 뜨게 만들기
+      // getDownloadURL(snapshot.ref).then((url) => {
+      //   setImageList((prev) => [...prev, url]);
+      // });
+      // //
     });
   };
   useEffect(() => {
@@ -72,9 +72,6 @@ export default function Home() {
           }}
         />
         <button onClick={onUpload}>업로드</button>
-        {imageList.map((el) => {
-          return <img key={el} src={el} />;
-        })}
       </div>
       <Divider />
       <Divider />
@@ -130,21 +127,27 @@ export default function Home() {
       <Divider />
       <Divider />
       <BottomSection>
-        <TitleText>지금까지 활동한 사진 다시보기</TitleText>
+        <TitleText>운동가들의 활동들</TitleText>
         <Divider className="thin_divider" />
         <StickerSection>
           <ArrowButtonBox>
             <ArrowBackIos className="icon left_arrow" />
           </ArrowButtonBox>
-          <WatchPhotoBox>
-            <PhotoInfoContainer>
-              {/* <text>info</text> */}
-              <NoticeText className="black_text date_text">
-                2024.xx.xx
-              </NoticeText>
-              <NoticeText className="black_text">x일 전</NoticeText>
-            </PhotoInfoContainer>
-          </WatchPhotoBox>
+
+          {imageList.map((el) => {
+            return (
+              <WatchPhotoBox key={el}>
+                <PhotoImage src={el} />
+                <PhotoInfoContainer>
+                  {/* <text>info</text> */}
+                  <NoticeText className="black_text date_text">
+                    2024.xx.xx
+                  </NoticeText>
+                  <NoticeText className="black_text">x일 전</NoticeText>
+                </PhotoInfoContainer>
+              </WatchPhotoBox>
+            );
+          })}
 
           <ArrowButtonBox>
             <ArrowForwardIos className="icon" />
@@ -320,10 +323,17 @@ const WatchPhotoBox = styled.div`
   width: 250px;
   background-color: #d9d9d9;
   border-radius: 15px;
+  overflow: hidden;
 
   .in_text {
     font-size: 15px;
   }
+`;
+
+const PhotoImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 const PhotoInfoContainer = styled.div`
