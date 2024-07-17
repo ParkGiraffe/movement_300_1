@@ -1,6 +1,7 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore } from "firebase/firestore/lite";
+import { getStorage } from "firebase/storage";
 
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,6 +16,7 @@ export const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+const storage = getStorage();
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
@@ -34,6 +36,6 @@ const signInWithGoogle = async () => {
       const credential = GoogleAuthProvider.credentialFromError(error);
       console.log(error);
     });
-  };
+};
 
-export { app, auth, db, signInWithGoogle };
+export { app, auth, db, storage, signInWithGoogle };

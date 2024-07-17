@@ -12,6 +12,11 @@ import { useState } from "react";
 // import StoreIcon from "@mui/icons-material/Store";
 
 export default function Home() {
+  // 이미지 업로드
+  const [imageUpload, setImageUpload] = useState(null);
+  const [imageList, setImageList] = useState([]);
+
+  // 로그인 닉네임
   const [accountName, SetAccountName] = useState(
     !auth.currentUser ? "로그인하기" : auth.currentUser.displayName
   );
