@@ -3,23 +3,50 @@
 import styled from "styled-components";
 import styles from "./page.module.css";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { auth, signInWithGoogle } from "@/firebase/firebaseClient";
+import { auth, signInWithGoogle, storage } from "@/firebase/firebaseClient";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
+
 // import StoreIcon from "@mui/icons-material/Store";
 
 export default function Home() {
   // 이미지 업로드
   const [imageUpload, setImageUpload] = useState(null);
   const [imageList, setImageList] = useState([]);
+  const imageListRef = ref(storage, "images/");
 
   // 로그인 닉네임
   const [accountName, SetAccountName] = useState(
     !auth.currentUser ? "로그인하기" : auth.currentUser.displayName
   );
+
+  // 이미지 업로드
+  const onUpload = () => {
+    if (imageUpload === null) return;
+
+    const imageRef = ref(storage, `images/${imageUpload.name}`);
+    // `images === 참조값이름(폴더이름), / 뒤에는 파일이름 어떻게 지을지
+    uploadBytes(imageRef, imageUpload).then((snapshot) => {
+      // 업로드 되자마자 뜨게 만들기
+      getDownloadURL(snapshot.ref).then((url) => {
+        setImageList((prev) => [...prev, url]);
+      });
+      //
+    });
+  };
+  useEffect(() => {
+    listAll(imageListRef).then((response) => {
+      response.items.forEach((item) => {
+        getDownloadURL(item).then((url) => {
+          setImageList((prev) => [...prev, url]);
+        });
+      });
+    });
+  }, []);
 
   const onLogin = async (event) => {
     event.preventDefault();
@@ -37,6 +64,21 @@ export default function Home() {
       </div>
       <Divider />
       <Divider />
+      <div>
+        <input
+          type="file"
+          onChange={(event) => {
+            setImageUpload(event.target.files[0]);
+          }}
+        />
+        <button onClick={onUpload}>업로드</button>
+        {imageList.map((el) => {
+          return <img key={el} src={el} />;
+        })}
+      </div>
+      <Divider />
+      <Divider />
+
       <TopSection>
         <TopText>금요일의 마스코트</TopText>
         <Divider />
