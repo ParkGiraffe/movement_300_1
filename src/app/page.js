@@ -3,13 +3,27 @@
 import styled from "styled-components";
 import styles from "./page.module.css";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { auth, signInWithGoogle, storage } from "@/firebase/firebaseClient";
+import { auth, db, signInWithGoogle, storage } from "@/firebase/firebaseClient";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useState, useEffect } from "react";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  listAll,
+  getDownloadURL,
+} from "firebase/storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot,
+} from "firebase/firestore";
 
 // import StoreIcon from "@mui/icons-material/Store";
 
@@ -17,50 +31,106 @@ export default function Home() {
   // 이미지 업로드
   const [imageUpload, setImageUpload] = useState(null);
   const [imageList, setImageList] = useState([]);
-  const imageListRef = ref(storage, "images/");
+  const [user, setUser] = useState(null);
+
+  const [todayCount, setTodayCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   // 로그인 닉네임
   const [accountName, SetAccountName] = useState(
     !auth.currentUser ? "로그인하기" : auth.currentUser.displayName
   );
 
-  // 이미지 업로드
-  const onUpload = () => {
-    if (imageUpload === null) return;
-
-    const imageRef = ref(storage, `images/${imageUpload.name}`);
-    // `images === 참조값이름(폴더이름), / 뒤에는 파일이름 어떻게 지을지
-    uploadBytes(imageRef, imageUpload).then((snapshot) => {
-      // // 업로드 되자마자 뜨게 만들기
-      // getDownloadURL(snapshot.ref).then((url) => {
-      //   setImageList((prev) => [...prev, url]);
-      // });
-      // //
-    });
-  };
   useEffect(() => {
-    listAll(imageListRef).then((response) => {
-      response.items.forEach((item) => {
-        getDownloadURL(item).then((url) => {
-          setImageList((prev) => [...prev, url]);
-        });
-      });
+    // Firebase Auth의 상태 변화를 감지하는 리스너 등록
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchImages(currentUser.uid);
+      }
     });
+
+    // 운동가 수 불러오기
+    const countRef = doc(db, "activist", "count");
+    const unsubscribeCount = onSnapshot(countRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setTodayCount(data.today);
+        setTotalCount(data.total);
+      }
+    });
+
+    // 컴포넌트가 언마운트될 때 리스너 등록 해제
+    return () => {
+      unsubscribe();
+      unsubscribeCount();
+    };
   }, []);
 
+  // 이미지 업로드
+  const onUpload = () => {
+    if (imageUpload === null || !user) return;
+
+    const imageRef = ref(storage, `images/${user.uid}/${imageUpload.name}`);
+    uploadBytes(imageRef, imageUpload).then(() => {
+      fetchImages(user.uid);
+      incrementCount();
+      // incrementCount("total");
+    });
+  };
+
+  const fetchImages = (uid) => {
+    const imageListRef = ref(storage, `images/${uid}/`);
+    listAll(imageListRef).then((response) => {
+      const urls = response.items.map((item) =>
+        getDownloadURL(item).then((url) => url)
+      );
+      Promise.all(urls).then((urlArray) => {
+        setImageList(urlArray);
+      });
+    });
+  };
+
+  // 로그인 함수
   const onLogin = async (event) => {
     event.preventDefault();
     await signInWithGoogle().then(() => {
-      SetAccountName(auth.currentUser.displayName);
+      if (auth.currentUser) {
+        setUser(auth.currentUser);
+        fetchImages(auth.currentUser.uid);
+      }
     });
   };
   // console.log(auth.currentUser.displayName);
+
+  // 카운트 증가 함수
+  const incrementCount = async () => {
+    const countRef = doc(db, "activist", "count");
+    const docSnap = await getDoc(countRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const newToday = (data["today"] || 0) + 1;
+      const newTotal = (data["total"] || 0) + 1;
+
+      await setDoc(countRef, {
+        ...data,
+        ["today"]: newToday,
+        ["total"]: newTotal,
+      });
+    } else {
+      await setDoc(countRef, {
+        today: 1,
+        total: 1,
+      });
+    }
+  };
 
   return (
     <main className={styles.main}>
       <div className={styles.userInfoContainer}>
         {/* <text onClick={onLogin}>접속자 : 20190320 박요셉</text> */}
-        <text onClick={onLogin}>{accountName}</text>
+        <text onClick={onLogin}>{user ? user.displayName : "로그인하기"}</text>
       </div>
       <Divider />
       <Divider />
@@ -92,16 +162,16 @@ export default function Home() {
         {/* <StoreIconContainer>
           <StoreIcon className="store_icon" />
           </StoreIconContainer> */}
-        <SportsmanSection>
-          <SportsmanBox>
+        <activistSection>
+          <activistBox>
             <TitleText>오늘 모인 운동가</TitleText>
             <CountText>15</CountText>
-          </SportsmanBox>
-          <SportsmanBox className="right_box">
+          </activistBox>
+          <activistBox className="right_box">
             <TitleText>지금까지 모인 운동가</TitleText>
             <CountText>100</CountText>
-          </SportsmanBox>
-        </SportsmanSection>
+          </activistBox>
+        </activistSection>
       </TopSection>
       <Divider />
       <Divider />
@@ -213,7 +283,7 @@ const TitleText = styled.h3`
   font-size: 19px;
 `;
 
-const SportsmanSection = styled.div`
+const activistSection = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -224,7 +294,7 @@ const SportsmanSection = styled.div`
   }
 `;
 
-const SportsmanBox = styled.div`
+const activistBox = styled.div`
   display: flex;
   flex-direction: column;
   width: 140px;
