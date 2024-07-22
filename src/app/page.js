@@ -14,7 +14,6 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 
-// import StoreIcon from "@mui/icons-material/Store";
 
 export default function Home() {
   // 이미지 업로드
