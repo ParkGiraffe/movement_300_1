@@ -4,21 +4,10 @@ import styled from "styled-components";
 import styles from "./page.module.css";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { auth, db, signInWithGoogle, storage } from "@/firebase/firebaseClient";
+import { useState, useEffect, useRef } from "react";
+import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged } from "firebase/auth";
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { useState, useEffect } from "react";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-} from "firebase/storage";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {
-  getFirestore,
   doc,
   getDoc,
   setDoc,
@@ -30,6 +19,7 @@ import {
 export default function Home() {
   // 이미지 업로드
   const [imageUpload, setImageUpload] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null); // 미리보기 URL 상태
   const [imageList, setImageList] = useState([]);
   const [user, setUser] = useState(null);
 
@@ -68,6 +58,12 @@ export default function Home() {
   }, []);
 
   // 이미지 업로드
+  const fileRef = useRef(null);
+  // input click method
+  const handleClick = () => {
+    fileRef?.current?.click();
+  };
+
   const onUpload = () => {
     if (imageUpload === null || !user) return;
 
@@ -90,6 +86,14 @@ export default function Home() {
       });
     });
   };
+
+  useEffect(() => {
+    if (imageUpload) {
+      const url = URL.createObjectURL(imageUpload);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url); // 메모리 누수 방지
+    }
+  }, [imageUpload]);
 
   // 로그인 함수
   const onLogin = async (event) => {
@@ -132,9 +136,8 @@ export default function Home() {
         {/* <text onClick={onLogin}>접속자 : 20190320 박요셉</text> */}
         <text onClick={onLogin}>{user ? user.displayName : "로그인하기"}</text>
       </div>
-      <Divider />
-      <Divider />
-      <div>
+
+      {/* <div>
         <input
           type="file"
           onChange={(event) => {
@@ -142,7 +145,7 @@ export default function Home() {
           }}
         />
         <button onClick={onUpload}>업로드</button>
-      </div>
+      </div> */}
       <Divider />
       <Divider />
 
@@ -165,11 +168,14 @@ export default function Home() {
         <activistSection>
           <activistBox>
             <TitleText>오늘 모인 운동가</TitleText>
-            <CountText>15</CountText>
+            <CountText>{todayCount}</CountText>
           </activistBox>
+
+          <Divider />
+
           <activistBox className="right_box">
             <TitleText>지금까지 모인 운동가</TitleText>
-            <CountText>100</CountText>
+            <CountText>{totalCount}</CountText>
           </activistBox>
         </activistSection>
       </TopSection>
@@ -178,19 +184,35 @@ export default function Home() {
       <MiddleSection>
         <TitleText>300.1 운동가 가입하기</TitleText>
         <Divider className="thin_divider" />
-        <AddPhotoBox>
-          <TitleText className="in_text">사진 추가하기</TitleText>
+        <AddPhotoBox onClick={handleClick}>
+          <AddPhotoInput
+            ref={fileRef}
+            type="file"
+            onChange={(event) => {
+              setImageUpload(event.target.files[0]);
+            }}
+          />
+          {!imageUpload ? (
+            <TitleText className="in_text">사진 첨부하기</TitleText>
+          ) : (
+            <WatchPhotoBox>
+              <PhotoImage src={previewUrl} alt="미리보기 이미지" />
+            </WatchPhotoBox>
+          )}
         </AddPhotoBox>
         <AddPhotoButton>
-          <TitleText>사진 등록하기</TitleText>
+          <TitleText onClick={onUpload}>사진 등록하기</TitleText>
         </AddPhotoButton>
         <NoticeTextContainer>
           <Divider className="thin_divider" />
           <NoticeText>위 버튼을 눌러서 활동 사진을 등록하세요!</NoticeText>
           <Divider className="thin_divider" />
           <NoticeText className="red_text">
-            인스타그램 스토리, 게시글에 <br /> 등록된 화면의 스크린샷을
-            등록하세요! (조건 미달시 등록 취소)
+            인스타그램 스토리, 게시글에
+            <br />
+            등록된 화면의 스크린샷을 등록하세요!
+            <br />
+            (조건 미달시 등록 취소)
           </NoticeText>
         </NoticeTextContainer>
       </MiddleSection>
@@ -357,9 +379,14 @@ const AddPhotoButton = styled.button`
   margin-top: 10px;
 `;
 
+const AddPhotoInput = styled.input`
+  display: none;
+`;
+
 const NoticeText = styled.text`
   font-size: 15px;
   color: grey;
+  text-align: center;
 `;
 
 const NoticeTextContainer = styled.div`
@@ -412,10 +439,11 @@ const PhotoInfoContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 250px;
-  height: 100px;
+  /* height: 100px; */
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   background-color: #e9dedf;
+  padding: 10px;
 
   .black_text {
     color: black;

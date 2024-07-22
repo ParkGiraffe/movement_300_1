@@ -11,6 +11,10 @@
   color: black;
 }
 
+.hidden {
+  display: none;
+}
+
 .userInfoContainer {
   /* background-color: aqua; */
   align-self: last baseline;
