@@ -7,13 +7,7 @@ import { auth, db, signInWithGoogle, storage } from "@/firebase/firebaseClient";
 import { useState, useEffect, useRef } from "react";
 import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  onSnapshot,
-} from "firebase/firestore";
-
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
 export default function Home() {
   // 이미지 업로드
@@ -21,6 +15,8 @@ export default function Home() {
   const [previewUrl, setPreviewUrl] = useState(null); // 미리보기 URL 상태
   const [imageList, setImageList] = useState([]);
   const [user, setUser] = useState(null);
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const [todayCount, setTodayCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -129,6 +125,19 @@ export default function Home() {
     }
   };
 
+  // 이미지 순서 변경 핸들러
+  const handleNextImage = () => {
+    if (currentImageIndex < imageList.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.userInfoContainer}>
@@ -221,26 +230,23 @@ export default function Home() {
         <TitleText>운동가들의 활동들</TitleText>
         <Divider className="thin_divider" />
         <StickerSection>
-          <ArrowButtonBox>
+          <ArrowButtonBox onClick={handlePreviousImage}>
             <ArrowBackIos className="icon left_arrow" />
           </ArrowButtonBox>
 
-          {imageList.map((el) => {
-            return (
-              <WatchPhotoBox key={el}>
-                <PhotoImage src={el} />
-                <PhotoInfoContainer>
-                  {/* <text>info</text> */}
-                  <NoticeText className="black_text date_text">
-                    2024.xx.xx
-                  </NoticeText>
-                  <NoticeText className="black_text">x일 전</NoticeText>
-                </PhotoInfoContainer>
-              </WatchPhotoBox>
-            );
-          })}
+          {imageList.length > 0 && (
+            <WatchPhotoBox>
+              <PhotoImage src={imageList[currentImageIndex]} />
+              <PhotoInfoContainer>
+                <NoticeText className="black_text date_text">
+                  2024.xx.xx
+                </NoticeText>
+                <NoticeText className="black_text">x일 전</NoticeText>
+              </PhotoInfoContainer>
+            </WatchPhotoBox>
+          )}
 
-          <ArrowButtonBox>
+          <ArrowButtonBox onClick={handleNextImage}>
             <ArrowForwardIos className="icon" />
           </ArrowButtonBox>
         </StickerSection>
