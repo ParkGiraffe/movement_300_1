@@ -126,7 +126,7 @@ export default function Home() {
   };
 
   return (
-    <main className={styles.main} style={{ display: loading ? 'none' : ' ' }}>
+    <main className={styles.main} style={{ display: loading ? 'none' : '' }}>
       <div className={styles.userInfoContainer}>
         <text onClick={onLogin}>{user ? user.displayName : "로그인하기"}</text>
       </div>
