@@ -10,24 +10,17 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
 export default function Home() {
-  // 이미지 업로드
   const [imageUpload, setImageUpload] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null); // 미리보기 URL 상태
+  const [previewUrl, setPreviewUrl] = useState(null); 
   const [imageList, setImageList] = useState([]);
   const [user, setUser] = useState(null);
-
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
   const [todayCount, setTodayCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-
-  // 로그인 닉네임
-  const [accountName, SetAccountName] = useState(
-    !auth.currentUser ? "로그인하기" : auth.currentUser.displayName
-  );
+  const fileRef = useRef(null);
 
   useEffect(() => {
-    // Firebase Auth의 상태 변화를 감지하는 리스너 등록
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -35,7 +28,6 @@ export default function Home() {
       }
     });
 
-    // 운동가 수 불러오기
     const countRef = doc(db, "activist", "count");
     const unsubscribeCount = onSnapshot(countRef, (doc) => {
       if (doc.exists()) {
@@ -45,16 +37,14 @@ export default function Home() {
       }
     });
 
-    // 컴포넌트가 언마운트될 때 리스너 등록 해제
+    setLoading(false); // 로딩 상태 해제
+
     return () => {
       unsubscribe();
       unsubscribeCount();
     };
   }, []);
 
-  // 이미지 업로드
-  const fileRef = useRef(null);
-  // input click method
   const handleClick = () => {
     fileRef?.current?.click();
   };
@@ -66,11 +56,11 @@ export default function Home() {
     uploadBytes(imageRef, imageUpload).then(() => {
       fetchImages(user.uid);
       incrementCount();
-      // incrementCount("total");
     });
   };
 
   const fetchImages = (uid) => {
+    setLoading(true); // 로딩 시작
     const imageListRef = ref(storage, `images/${uid}/`);
     listAll(imageListRef).then((response) => {
       const urls = response.items.map((item) =>
@@ -78,6 +68,7 @@ export default function Home() {
       );
       Promise.all(urls).then((urlArray) => {
         setImageList(urlArray);
+        setLoading(false); // 로딩 끝
       });
     });
   };
@@ -86,11 +77,10 @@ export default function Home() {
     if (imageUpload) {
       const url = URL.createObjectURL(imageUpload);
       setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url); // 메모리 누수 방지
+      return () => URL.revokeObjectURL(url);
     }
   }, [imageUpload]);
 
-  // 로그인 함수
   const onLogin = async (event) => {
     event.preventDefault();
     await signInWithGoogle().then(() => {
@@ -100,9 +90,7 @@ export default function Home() {
       }
     });
   };
-  // console.log(auth.currentUser.displayName);
 
-  // 카운트 증가 함수
   const incrementCount = async () => {
     const countRef = doc(db, "activist", "count");
     const docSnap = await getDoc(countRef);
@@ -125,7 +113,6 @@ export default function Home() {
     }
   };
 
-  // 이미지 순서 변경 핸들러
   const handleNextImage = () => {
     if (currentImageIndex < imageList.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
@@ -139,21 +126,11 @@ export default function Home() {
   };
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} style={{ display: loading ? 'none' : ' ' }}>
       <div className={styles.userInfoContainer}>
-        {/* <text onClick={onLogin}>접속자 : 20190320 박요셉</text> */}
         <text onClick={onLogin}>{user ? user.displayName : "로그인하기"}</text>
       </div>
 
-      {/* <div>
-        <input
-          type="file"
-          onChange={(event) => {
-            setImageUpload(event.target.files[0]);
-          }}
-        />
-        <button onClick={onUpload}>업로드</button>
-      </div> */}
       <Divider />
       <Divider />
 
@@ -170,17 +147,12 @@ export default function Home() {
           </ArrowButtonBox>
         </StickerSection>
         <Divider />
-        {/* <StoreIconContainer>
-          <StoreIcon className="store_icon" />
-          </StoreIconContainer> */}
         <activistSection>
           <activistBox>
             <TitleText>오늘 모인 운동가</TitleText>
             <CountText>{todayCount}</CountText>
           </activistBox>
-
           <Divider />
-
           <activistBox className="right_box">
             <TitleText>지금까지 모인 운동가</TitleText>
             <CountText>{totalCount}</CountText>
@@ -256,6 +228,8 @@ export default function Home() {
     </main>
   );
 }
+
+
 
 const TopSection = styled.div`
   text-align: center;
