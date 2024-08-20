@@ -11,7 +11,7 @@ import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
 export default function Home() {
   const [imageUpload, setImageUpload] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null); 
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [imageList, setImageList] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
@@ -126,7 +126,7 @@ export default function Home() {
   };
 
   return (
-    <main className={styles.main} style={{ display: loading ? 'none' : '' }}>
+    <main className={styles.main} style={{ display: loading ? "none" : "" }}>
       <div className={styles.userInfoContainer}>
         <text onClick={onLogin}>{user ? user.displayName : "로그인하기"}</text>
       </div>
@@ -229,8 +229,6 @@ export default function Home() {
   );
 }
 
-
-
 const TopSection = styled.div`
   text-align: center;
 `;
@@ -284,16 +282,6 @@ const TitleText = styled.h3`
   font-size: 19px;
 `;
 
-const activistSection = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  /* background-color: cyan; */
-
-  .right_box {
-    margin-left: 20px;
-  }
-`;
 
 const activistBox = styled.div`
   display: flex;
